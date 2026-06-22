@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f0f7ff; /* Very soft light blue */
+  color: #1e293b; /* Slate-800 for clean text readability */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+/* Minimalist Input Fields */
+.input-minimalist {
+  @apply w-full px-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all;
+}
+
+/* Minimalist Buttons */
+.btn-primary {
+  @apply px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-400;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-brand-400;
+}
+
+.btn-outline {
+  @apply px-4 py-2 border border-brand-500 text-brand-600 hover:bg-brand-50 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-brand-300;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-red-300;
+}
+
+.card-minimalist {
+  @apply bg-white border border-brand-100 rounded-xl p-6 shadow-sm transition-all;
+}
