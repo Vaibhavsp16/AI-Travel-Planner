@@ -1,5 +1,6 @@
-import Header from '@/components/Header';
+import Header from '../components/Header';
 import './globals.css';
+
 
 export const metadata = {
   title: 'AI Travel Planner - Plan Your Next Adventure',
