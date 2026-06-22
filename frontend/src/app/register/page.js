@@ -32,7 +32,8 @@ export default function Register() {
       window.dispatchEvent(new Event('auth-change'));
       router.push('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong during registration');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || err.message || 'Something went wrong during registration');
     } finally {
       setLoading(false);
     }

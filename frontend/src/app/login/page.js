@@ -32,7 +32,8 @@ export default function Login() {
       window.dispatchEvent(new Event('auth-change'));
       router.push('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
