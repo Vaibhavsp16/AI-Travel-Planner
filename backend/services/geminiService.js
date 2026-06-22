@@ -93,14 +93,15 @@ function generateMockTripData(destination, numberOfDays, budgetType, interests) 
   for (let i = 1; i <= daysCount; i++) {
     const dayActivities = [];
     
-    // Choose 2 main activities per day based on interests
+    // Choose main activities per day based on interests (no repeated times)
+    const dayTimes = ['09:00 AM', '11:30 AM', '02:00 PM', '04:30 PM', '07:00 PM'];
     userInterests.forEach((interest, idx) => {
       const bank = activitiesBank[interest.toLowerCase()] || activitiesBank.culture;
       // Cyclically pick activities so we do not go out of bounds
       const activityIndex = (i + idx) % bank.length;
       const bankActivity = bank[activityIndex];
       
-      const time = idx === 0 ? '09:30 AM' : '02:30 PM';
+      const time = dayTimes[idx % dayTimes.length];
       dayActivities.push({
         id: `m_d${i}_a${idx + 1}`,
         time,
@@ -130,13 +131,40 @@ function generateMockTripData(destination, numberOfDays, budgetType, interests) 
 }
 
 // Generate Full Trip
+// Robust JSON response parser to handle any markdown wrapping or preambles
+function cleanAndParseJson(rawText) {
+  let cleaned = rawText.trim();
+  
+  // Try locating the start and end of standard brackets/braces
+  const firstBracket = cleaned.indexOf('[');
+  const firstBrace = cleaned.indexOf('{');
+  
+  let startIdx = -1;
+  let endIdx = -1;
+  
+  if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+    startIdx = firstBracket;
+    endIdx = cleaned.lastIndexOf(']');
+  } else if (firstBrace !== -1) {
+    startIdx = firstBrace;
+    endIdx = cleaned.lastIndexOf('}');
+  }
+  
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    cleaned = cleaned.substring(startIdx, endIdx + 1);
+  }
+  
+  return JSON.parse(cleaned);
+}
+
 exports.generateTripItinerary = async (destination, numberOfDays, budgetType, interests) => {
   if (!genAI) {
     return generateMockTripData(destination, numberOfDays, budgetType, interests);
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Using gemini-pro which is compatible with all @google/generative-ai SDK versions
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `
       You are an expert travel AI agent. Generate a detailed travel plan for a trip to "${destination}".
       Details:
@@ -172,15 +200,8 @@ exports.generateTripItinerary = async (destination, numberOfDays, budgetType, in
     `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    
-    // Clean potential markdown wrapped backticks if LLM disobeyed
-    let cleanText = text;
-    if (text.startsWith('```')) {
-      cleanText = text.replace(/^```json\s*/, '').replace(/```$/, '').trim();
-    }
-
-    const data = JSON.parse(cleanText);
+    const text = result.response.text();
+    const data = cleanAndParseJson(text);
     return data;
   } catch (err) {
     console.error('Error generating itinerary via Gemini API:', err);
@@ -194,32 +215,57 @@ exports.regenerateSingleDay = async (destination, budgetType, dayNumber, current
   if (!genAI) {
     console.log(`🤖 Offline mock: Regenerating Day ${dayNumber} with prompt: "${promptText}"`);
     const multiplier = budgetType === 'low' ? 0.6 : budgetType === 'high' ? 2.5 : 1.2;
-    // Mock new activities for this day based on the instruction
-    const isOutdoor = promptText.toLowerCase().includes('outdoor') || promptText.toLowerCase().includes('adventure');
-    const isRelaxed = promptText.toLowerCase().includes('relax') || promptText.toLowerCase().includes('chill');
     
-    let activity1Name = `Specialist Sightseeing Tour`;
-    let activity1Desc = `Custom explorer walk incorporating: "${promptText}"`;
-    let activity1Cost = 20;
+    // Dynamically build titles and details matching the user's prompt text to give relevant results when offline
+    const lowerPrompt = promptText.toLowerCase();
+    const isOutdoor = lowerPrompt.includes('outdoor') || lowerPrompt.includes('adventure') || lowerPrompt.includes('hike') || lowerPrompt.includes('nature');
+    const isRelaxed = lowerPrompt.includes('relax') || lowerPrompt.includes('chill') || lowerPrompt.includes('spa') || lowerPrompt.includes('slow');
+    const isFood = lowerPrompt.includes('food') || lowerPrompt.includes('eat') || lowerPrompt.includes('dining') || lowerPrompt.includes('restaurant') || lowerPrompt.includes('culinary');
+    const isShopping = lowerPrompt.includes('shop') || lowerPrompt.includes('market') || lowerPrompt.includes('buy');
 
-    let activity2Name = `Themed Evening Activity`;
-    let activity2Desc = `An customized dining and cultural immersion event matching your request.`;
-    let activity2Cost = 30;
+    let activity1Name = `Explore ${destination} Highlights`;
+    let activity1Desc = `Sightseeing tour focusing on: "${promptText}"`;
+    let activity1Cost = 15;
+
+    let activity2Name = `Custom Evening Experience`;
+    let activity2Desc = `An immersive local activity custom tailored to your request: "${promptText}"`;
+    let activity2Cost = 25;
 
     if (isOutdoor) {
-      activity1Name = `Nature Trail & Viewpoint Hike`;
-      activity1Desc = `Scenic outdoor climb matching the request for more outdoor exploration.`;
+      activity1Name = `Scenic Hiking & Outdoor Trek`;
+      activity1Desc = `Explore beautiful nature trails and viewpoints around ${destination} as requested.`;
       activity1Cost = 10;
-      activity2Name = `Riverside Kayaking & Outdoors`;
-      activity2Desc = `Active outdoor boating on local waters.`;
+      activity2Name = `Adventure Water Sports & Rafting`;
+      activity2Desc = `Thrilling outdoor boating and watersports session.`;
       activity2Cost = 45;
     } else if (isRelaxed) {
-      activity1Name = `Leisurely Cafe Stroll`;
-      activity1Desc = `Slow morning exploring quiet streets and tasting warm drinks.`;
-      activity1Cost = 12;
-      activity2Name = `Wellness Spa & Massage`;
-      activity2Desc = `Premium therapeutic relaxation session.`;
+      activity1Name = `Leisurely Botanical Walk`;
+      activity1Desc = `Enjoy a relaxed walk around the most peaceful gardens in the area.`;
+      activity1Cost = 8;
+      activity2Name = `Traditional Spa & Hot Baths`;
+      activity2Desc = `Full therapeutic massage and relaxation session to unwind.`;
+      activity2Cost = 70;
+    } else if (isFood) {
+      activity1Name = `Gourmet Food District Crawl`;
+      activity1Desc = `Guided culinary crawl tasting traditional local snacks and appetizers.`;
+      activity1Cost = 35;
+      activity2Name = `Fine Dining Multi-Course Experience`;
+      activity2Desc = `Premium local restaurant dinner matching your culinary interests.`;
       activity2Cost = 75;
+    } else if (isShopping) {
+      activity1Name = `Local Flea Market Exploration`;
+      activity1Desc = `Browse stalls of artisanal crafts, antiques, and local goods.`;
+      activity1Cost = 0;
+      activity2Name = `High-End Boutique Shopping`;
+      activity2Desc = `Visit upscale shopping plazas and purchase custom souvenirs.`;
+      activity2Cost = 50;
+    } else {
+      // Dynamic fallback based on prompt words
+      const words = promptText.split(' ').slice(0, 3).join(' ');
+      activity1Name = `Specialty Activity: ${words}`;
+      activity1Desc = `Morning activities customized for: "${promptText}"`;
+      activity2Name = `Explorer Session: ${words}`;
+      activity2Desc = `Afternoon immersion aligned with: "${promptText}"`;
     }
 
     return [
@@ -241,7 +287,7 @@ exports.regenerateSingleDay = async (destination, budgetType, dayNumber, current
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `
       You are an expert travel AI agent.
       The user wants to regenerate the activities of Day ${dayNumber} for a trip to "${destination}".
@@ -268,30 +314,24 @@ exports.regenerateSingleDay = async (destination, budgetType, dayNumber, current
     `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    
-    let cleanText = text;
-    if (text.startsWith('```')) {
-      cleanText = text.replace(/^```json\s*/, '').replace(/```$/, '').trim();
-    }
-
-    const data = JSON.parse(cleanText);
+    const text = result.response.text();
+    const data = cleanAndParseJson(text);
     return data;
   } catch (err) {
     console.error('Error regenerating day via Gemini API:', err);
-    // Simple fallback
+    // Dynamic fallback in case of errors
     return [
       {
-        id: `fallback_${dayNumber}_1`,
+        id: `fallback_${dayNumber}_1_${Date.now()}`,
         time: '10:00 AM',
-        activityName: `Alternative Sightseeing in ${destination}`,
+        activityName: `Alternative Sightseeing (${promptText.split(' ').slice(0,3).join(' ')})`,
         description: `Enjoy a customized sightseeing itinerary matching: "${promptText}"`,
         cost: 15
       },
       {
-        id: `fallback_${dayNumber}_2`,
+        id: `fallback_${dayNumber}_2_${Date.now()}`,
         time: '03:00 PM',
-        activityName: `Specialty Local Activity`,
+        activityName: `Specialty Local Activity (${promptText.split(' ').slice(0,3).join(' ')})`,
         description: `Explore unique spots satisfying: "${promptText}"`,
         cost: 30
       }

@@ -42,6 +42,24 @@ export default function TripDetails() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+  // Helper to sort activities by time chronologically
+  const getSortedActivities = (activities = []) => {
+    const parseTimeToMinutes = (timeStr) => {
+      if (!timeStr) return 9999;
+      // Strip any emojis or leading/trailing spaces
+      const clean = timeStr.trim().toUpperCase();
+      const match = clean.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return 9999;
+      let hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      const ampm = match[3];
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+    return [...activities].sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -365,14 +383,27 @@ export default function TripDetails() {
                 <div className="grid sm:grid-cols-3 gap-3">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-600 uppercase">Time</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 09:00 AM"
-                      className="input-minimalist text-xs py-1.5 px-3"
+                    <select
+                      className="w-full px-3 py-1.5 bg-white border border-brand-200 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all"
                       value={newActivity.time}
                       onChange={(e) => setNewActivity({ ...newActivity, time: e.target.value })}
-                    />
+                    >
+                      <option value="08:00 AM">08:00 AM</option>
+                      <option value="09:00 AM">09:00 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="01:00 PM">01:00 PM</option>
+                      <option value="02:00 PM">02:00 PM</option>
+                      <option value="03:00 PM">03:00 PM</option>
+                      <option value="04:00 PM">04:00 PM</option>
+                      <option value="05:00 PM">05:00 PM</option>
+                      <option value="06:00 PM">06:00 PM</option>
+                      <option value="07:00 PM">07:00 PM</option>
+                      <option value="08:00 PM">08:00 PM</option>
+                      <option value="09:00 PM">09:00 PM</option>
+                      <option value="10:00 PM">10:00 PM</option>
+                    </select>
                   </div>
                   <div className="flex flex-col gap-1 sm:col-span-2">
                     <label className="text-[10px] font-bold text-slate-600 uppercase">Activity Name</label>
@@ -419,7 +450,7 @@ export default function TripDetails() {
               <p className="text-slate-500 text-sm py-6 text-center">No activities listed. Add one above or regenerate the day!</p>
             ) : (
               <div className="flex flex-col gap-4">
-                {trip.itinerary?.find(d => d.dayNumber === activeDay)?.activities?.map((act) => (
+                {getSortedActivities(trip.itinerary?.find(d => d.dayNumber === activeDay)?.activities || []).map((act) => (
                   <div key={act.id} className="group p-4 bg-slate-50 border border-slate-100 rounded-lg hover:border-brand-200 transition-colors flex items-start gap-4 justify-between">
                     <div className="flex items-start gap-3">
                       <span className="text-xs font-semibold text-brand-600 bg-white border border-brand-100 px-2 py-0.5 rounded shadow-sm shrink-0">

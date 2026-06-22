@@ -106,14 +106,14 @@ export default function CreateTrip() {
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-slate-600 uppercase" htmlFor="destination">Where to?</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                  <MapPin className="w-4 h-4" />
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                  <MapPin className="w-4.5 h-4.5 text-slate-400" />
                 </span>
                 <input
                   id="destination"
                   type="text"
                   required
-                  className="input-minimalist pl-9"
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all text-sm"
                   placeholder="e.g. Tokyo, Paris, Bali"
                   value={formData.destination}
                   onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
@@ -126,8 +126,8 @@ export default function CreateTrip() {
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-slate-600 uppercase" htmlFor="numberOfDays">Number of Days</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                    <Calendar className="w-4 h-4" />
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                    <Calendar className="w-4.5 h-4.5 text-slate-400" />
                   </span>
                   <input
                     id="numberOfDays"
@@ -135,7 +135,7 @@ export default function CreateTrip() {
                     required
                     min="1"
                     max="15"
-                    className="input-minimalist pl-9"
+                    className="w-full pl-10 pr-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all text-sm"
                     value={formData.numberOfDays}
                     onChange={(e) => setFormData({ ...formData, numberOfDays: parseInt(e.target.value) || 1 })}
                   />

@@ -57,15 +57,15 @@ export default function Register() {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-600 uppercase" htmlFor="name">Full Name</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <User className="w-4 h-4" />
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                <User className="w-4.5 h-4.5 text-slate-400" />
               </span>
               <input
                 id="name"
                 name="name"
                 type="text"
                 required
-                className="input-minimalist pl-9"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all text-sm"
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={handleChange}
@@ -76,15 +76,15 @@ export default function Register() {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-600 uppercase" htmlFor="email">Email Address</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <Mail className="w-4 h-4" />
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                <Mail className="w-4.5 h-4.5 text-slate-400" />
               </span>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                className="input-minimalist pl-9"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all text-sm"
                 placeholder="john@example.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -95,15 +95,15 @@ export default function Register() {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-600 uppercase" htmlFor="password">Password</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <Lock className="w-4 h-4" />
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                <Lock className="w-4.5 h-4.5 text-slate-400" />
               </span>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="input-minimalist pl-9"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-brand-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-brand-400 focus:outline-none transition-all text-sm"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
