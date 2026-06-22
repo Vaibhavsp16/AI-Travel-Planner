@@ -163,8 +163,7 @@ exports.generateTripItinerary = async (destination, numberOfDays, budgetType, in
   }
 
   try {
-    // Using gemini-pro which is compatible with all @google/generative-ai SDK versions
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const prompt = `
       You are an expert travel AI agent. Generate a detailed travel plan for a trip to "${destination}".
       Details:
@@ -287,7 +286,7 @@ exports.regenerateSingleDay = async (destination, budgetType, dayNumber, current
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const prompt = `
       You are an expert travel AI agent.
       The user wants to completely rewrite the activities of Day ${dayNumber} for a trip to "${destination}".
