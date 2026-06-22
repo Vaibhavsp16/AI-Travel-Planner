@@ -72,7 +72,7 @@ graph TD
 3. **Data Isolation**: Database models strictly partition queries using the `userId` field. Before performing any read, update, or deletion operation, the controller verifies that the resource's `userId` matches the authenticated `userId`. Attempts to query or modify other users' trips will result in a `403 Forbidden` error.
 
 ### AI Agent Design & Purpose
-- **Integration**: Communicates with the `gemini-pro` model via the `@google/generative-ai` SDK.
+- **Integration**: Communicates with the `gemini-1.5-flash` model via the `@google/generative-ai` SDK.
 - **Structure Prompting**: Employs structural JSON constraints in the prompt templates to instruct the model to return data conforming strictly to our database schemas.
 - **Inline Regeneration**: The day regeneration feature builds a prompt with the context of the destination and existing activities, injecting the user's specific request (e.g., "add more outdoor activities"), and swaps the returned schedule in place without affecting other days.
 - **Robust Parsing**: Integrates a parsing block locator `cleanAndParseJson` to isolate the JSON array/object inside LLM returns, preventing errors from conversational preambles.
