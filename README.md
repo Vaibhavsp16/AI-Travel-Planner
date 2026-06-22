@@ -9,7 +9,7 @@ Designed with a clean, bright **light-blue minimalistic aesthetic** (strictly li
 ## 🌟 Features
 
 - **User Authentication**: Secure user registration and login utilizing JWT tokens with database-level isolation.
-- **AI Itinerary Generation**: Day-by-day schedules with descriptions, times, and costs tailored to destination, length, and interests.
+- **AI Itinerary Generator**: Day-by-day schedules with descriptions, times, and costs tailored to destination, length, and interests.
 - **AI Budget Estimation**: Broken down into Flights, Accommodation, Dining, and Activities.
 - **Dynamic Modifications**: Users can add, modify, or remove activities, and ask the AI agent to redesign specific days (e.g., "add more nature walks").
 - **Hotel Suggestions**: Automated lodging suggestions grouped by budget tiers (Budget, Mid Range, Luxury) complete with traveler ratings.
@@ -20,13 +20,18 @@ Designed with a clean, bright **light-blue minimalistic aesthetic** (strictly li
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Technology Stack & Justification
 
-- **Frontend**: [Next.js](https://nextjs.org/) (React Framework, Page Routing, Client-side React Hooks)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Custom light-blue theme using the `sky`/`blue` palette)
-- **Icons**: [Lucide React](https://lucide.dev/) (Minimalistic inline SVG icons)
-- **Backend**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) via [Mongoose](https://mongoosejs.com/) OR a custom local file-system JSON database.
+- **Frontend**: Next.js 14 (React Framework)
+  - *Justification*: Page-based routing provides solid navigation structure, and client-side hooks allow rich interactive elements.
+- **Styling**: Tailwind CSS
+  - *Justification*: Utility classes enable quick styling of a soft light-blue theme (`sky`/`blue` palettes) and maintain a clean, consistent design language.
+- **Icons**: Lucide React
+  - *Justification*: Lightweight vector icons that enhance the layout without adding bulk.
+- **Backend**: Node.js + Express
+  - *Justification*: Highly optimized asynchronous request processing, perfect for RESTful API design.
+- **Database**: MongoDB (via Mongoose)
+  - *Justification*: Document storage perfectly matches hierarchical travel itineraries (users -> trips -> days -> activities).
 - **Language**: JavaScript (ES6+)
 
 ---
@@ -66,14 +71,19 @@ graph TD
 2. **Authorization Middleware**: Secured routes pass through an `auth.js` middleware which validates the header token (`Bearer <token>`) and attaches the `userId` to `req.user`.
 3. **Data Isolation**: Database models strictly partition queries using the `userId` field. Before performing any read, update, or deletion operation, the controller verifies that the resource's `userId` matches the authenticated `userId`. Attempts to query or modify other users' trips will result in a `403 Forbidden` error.
 
-### AI Agent Design
-- **Integration**: Communicates with the `gemini-1.5-flash` model via the `@google/generative-ai` SDK.
+### AI Agent Design & Purpose
+- **Integration**: Communicates with the `gemini-pro` model via the `@google/generative-ai` SDK.
 - **Structure Prompting**: Employs structural JSON constraints in the prompt templates to instruct the model to return data conforming strictly to our database schemas.
-- **Inline Regeneration**: The day regeneration feature builds a prompt with the context of the destination and existing activities, injecting the user's specific request (e.g., "more outdoor activities"), and swaps the returned schedule in place without affecting other days.
+- **Inline Regeneration**: The day regeneration feature builds a prompt with the context of the destination and existing activities, injecting the user's specific request (e.g., "add more outdoor activities"), and swaps the returned schedule in place without affecting other days.
+- **Robust Parsing**: Integrates a parsing block locator `cleanAndParseJson` to isolate the JSON array/object inside LLM returns, preventing errors from conversational preambles.
 
 ### Creative Custom Feature: Interactive Budget & Expense Tracker
 - **The Problem**: A travel planner stops once the trip begins. Standard travel planners do not bridge the gap between estimated budgets and real-world spending, causing users to easily overspend.
-- **The Solution**: We built an **Interactive Expense Tracker** inside each trip dashboard. Users log expenses on the fly (categorized under flights, lodging, food, activities, or other). A live slider/progress meter compares the overall actual spending against the AI-estimated budget, warning users in orange/red if they overspend, or encouraging them in green if they remain under budget.
+- **The Solution**: We built an **Interactive Expense Tracker** inside each trip dashboard. Users log expenses on the fly (categorized under flights, lodging, food, activities, or other). A live progress meter compares the overall actual spending against the AI-estimated budget, warning users in orange/red if they overspend, or encouraging them in green if they remain under budget.
+
+### Key Design Decisions & Trade-Offs
+- **Graceful Local Fallback**: Instead of throwing connection errors if MongoDB or Gemini is not set up, the backend automatically launches database and LLM fallbacks. This allows evaluators to run the application immediately with zero setup configurations, while supporting full cloud database/AI integration.
+- **Timeline Ordering**: Added client-side chronological sorting to the daily activities. This ensures that the schedule maintains sequential order (e.g. 09:00 AM, 11:30 AM, 02:00 PM) regardless of the order they were generated by the AI or manually appended by the user.
 
 ---
 
@@ -83,42 +93,51 @@ Follow these steps to run the application locally.
 
 ### Prerequisites
 - Node.js installed locally (v18 or higher recommended).
-- A web browser.
+- Git installed.
 
 ### 1. Backend Setup
 1. Open a terminal and navigate to the backend folder:
    ```bash
    cd backend
    ```
-2. Copy the environment template:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy the environment template:
    ```bash
    cp .env.example .env
    ```
-3. Set your environment variables in `.env`. (By default, the server runs out-of-the-box on port `5000` using the local JSON-file database and mock AI, requiring no setup keys).
-4. Start the backend:
-   - For development (with auto-restart):
-     ```bash
-     npm run dev
-     ```
-   - For production:
-     ```bash
-     npm start
-     ```
+4. Set your environment variables in `.env`. (If omitted, the server runs on port `5000` using the local JSON-file database and mock AI):
+   ```env
+   PORT=5000
+   JWT_SECRET=travel_planner_super_secret_key_123
+   MONGODB_URI=your_mongodb_connection_string
+   GEMINI_API_KEY=your_gemini_api_key
+   ```
+5. Start the backend:
+   ```bash
+   npm run dev
+   ```
 
 ### 2. Frontend Setup
 1. Open a new terminal window and navigate to the frontend folder:
    ```bash
    cd ../frontend
    ```
-2. Copy the environment template:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy the environment template:
    ```bash
    cp .env.example .env
    ```
-3. Start the Next.js development server:
+4. Start the Next.js development server:
    ```bash
    npm run dev
    ```
-4. Access the web interface at [http://localhost:3000](http://localhost:3000).
+5. Access the web interface at [http://localhost:3000](http://localhost:3000).
 
 ---
 
