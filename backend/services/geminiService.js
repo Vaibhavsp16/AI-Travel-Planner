@@ -290,23 +290,28 @@ exports.regenerateSingleDay = async (destination, budgetType, dayNumber, current
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `
       You are an expert travel AI agent.
-      The user wants to regenerate the activities of Day ${dayNumber} for a trip to "${destination}".
+      The user wants to completely rewrite the activities of Day ${dayNumber} for a trip to "${destination}".
       The user's specific request is: "${promptText}".
       
-      Current activities on Day ${dayNumber} were:
+      Previous activities on Day ${dayNumber} were:
       ${JSON.stringify(currentDayActivities, null, 2)}
 
-      Please regenerate and improve the activities for Day ${dayNumber} adhering strictly to the user request.
+      Instructions:
+      1. Completely rewrite the itinerary for Day ${dayNumber} so that the schedule is ENTIRELY centric to the user request: "${promptText}".
+      2. Do NOT just tweak the old activities. Instead, replace them with fresh, highly relevant activities that fully satisfy this prompt.
+      3. Design between 2 to 4 distinct activities distributed chronologically across the day (e.g. Morning, Afternoon, Evening).
+      4. Make the activity names, descriptions, and costs detailed, satisfying, and realistic for ${destination} under the ${budgetType} budget preference.
+
       Respond ONLY with a valid, raw JSON array of activity objects. Do not wrap the JSON in markdown code blocks like \`\`\`json ... \`\`\` or include any explanations.
 
       The JSON structure MUST follow this exact schema:
       [
         {
           "id": "unique-activity-id",
-          "time": "10:00 AM",
-          "activityName": "Name of new activity",
-          "description": "Brief description matching their instructions",
-          "cost": 25
+          "time": "09:00 AM", // specify clear distinct times for each activity (e.g., 09:00 AM, 02:00 PM, 06:30 PM)
+          "activityName": "Highly thematic activity title",
+          "description": "Engaging description showcasing how this fulfills the user instruction: ${promptText}",
+          "cost": 20
         }
       ]
 
